@@ -1,0 +1,16 @@
+{
+  "name": "dinosaurios-academy",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:web": "pnpm --filter web dev",
+    "build:web": "pnpm --filter web build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.15.0"
+}
