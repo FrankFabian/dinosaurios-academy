@@ -1,2 +1,3 @@
+declare const helloFromShared: () => string;
 
-export {  }
+export { helloFromShared };
