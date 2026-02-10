@@ -79,14 +79,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  coach     Coach?
-  staff    Staff?
-  student  Student?
-  
-	markedAttendances Attendance[] @relation("AttendanceMarkedBy")
-	editedAttendances Attendance[] @relation("AttendanceEditedBy")
-	requestedStudentLinkOtps StudentLinkOtp[]
+  coach   Coach?
+  staff   Staff?
+  student Student?
 
+  markedAttendances        Attendance[]     @relation("AttendanceMarkedBy")
+  editedAttendances        Attendance[]     @relation("AttendanceEditedBy")
+  requestedStudentLinkOtps StudentLinkOtp[]
 
   @@index([role])
 }
@@ -96,11 +95,11 @@ model User {
 //
 
 model Location {
-  id        String         @id @default(cuid())
-  name      String
-  address   String
+  id       String         @id @default(cuid())
+  name     String
+  address  String
   photoUrl String?
-  status    LocationStatus @default(ACTIVE)
+  status   LocationStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -114,31 +113,31 @@ model Location {
 }
 
 model Discipline {
-  id        String            @id @default(cuid())
-  name      String
-  icon      String?
-  status    DisciplineStatus  @default(ACTIVE)
+  id     String           @id @default(cuid())
+  name   String
+  icon   String?
+  status DisciplineStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  locations  LocationDiscipline[]
-  coaches    Coach[]
-  groups     Group[]
+  locations LocationDiscipline[]
+  coaches   Coach[]
+  groups    Group[]
 
   @@unique([name])
   @@index([status])
 }
 
 model Category {
-  id        String          @id @default(cuid())
-  name      String
-  status    CategoryStatus @default(ACTIVE)
+  id     String         @id @default(cuid())
+  name   String
+  status CategoryStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  groups    Group[]
+  groups Group[]
 
   @@unique([name])
   @@index([status])
@@ -146,10 +145,10 @@ model Category {
 
 // Capacity per Location + Discipline
 model LocationDiscipline {
-  id            String   @id @default(cuid())
-  locationId    String
-  disciplineId  String
-  maxCapacity   Int
+  id           String @id @default(cuid())
+  locationId   String
+  disciplineId String
+  maxCapacity  Int
 
   location   Location   @relation(fields: [locationId], references: [id], onDelete: Cascade)
   discipline Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
@@ -165,8 +164,8 @@ model LocationDiscipline {
 //
 
 model Coach {
-  id           String      @id @default(cuid())
-  userId       String      @unique
+  id           String  @id @default(cuid())
+  userId       String  @unique
   phone        String?
   photoUrl     String?
   disciplineId String?
@@ -174,17 +173,17 @@ model Coach {
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   discipline Discipline? @relation(fields: [disciplineId], references: [id], onDelete: SetNull)
 
-  groups     Group[]
+  groups Group[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Staff {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  phone     String?
-  photoUrl  String?
+  id       String  @id @default(cuid())
+  userId   String  @unique
+  phone    String?
+  photoUrl String?
 
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   locations StaffLocation[]
@@ -194,11 +193,11 @@ model Staff {
 }
 
 model StaffLocation {
-  id          String   @id @default(cuid())
-  staffId     String
-  locationId  String
+  id         String @id @default(cuid())
+  staffId    String
+  locationId String
 
-  staff    Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staff    Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
   location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 
   @@unique([staffId, locationId])
@@ -209,23 +208,25 @@ model StaffLocation {
 //
 
 model Student {
-  id            String        @id @default(cuid())
-  userId        String?       @unique
-  documentId    String        @unique
-  firstName     String
-  lastName      String
-  phone         String?
-  email         String
-  birthDate     DateTime
-  photoUrl      String?
-	linkOtps StudentLinkOtp[]
+  id         String           @id @default(cuid())
+  userId     String?          @unique
+  documentId String           @unique
+  firstName  String
+  lastName   String
+  phone      String?
+  email      String
+  birthDate  DateTime
+  photoUrl   String?
+  qrCode     String           @unique
+  qrIssuedAt DateTime         @default(now())
+  linkOtps   StudentLinkOtp[]
 
-  status        RecordStatus  @default(ACTIVE)
+  status RecordStatus @default(ACTIVE)
 
   guardianId String?
   guardian   Guardian? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
 
-  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   enrollments Enrolment[]
   attendances Attendance[]
@@ -235,13 +236,13 @@ model Student {
 }
 
 model Guardian {
-  id        String   @id @default(cuid())
+  id         String  @id @default(cuid())
   documentId String? @unique
-  firstName String
-  lastName  String
-  phone     String?
+  firstName  String
+  lastName   String
+  phone      String?
 
-  students  Student[]
+  students Student[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -252,16 +253,16 @@ model Guardian {
 //
 
 model Group {
-  id                String   @id @default(cuid())
-  locationId        String
-  disciplineId      String
-  gender            Gender
-  categoryId        String
-  sessionsPerWeek   Int
-  daysOfWeek        WeekDay[]
-  startMinute       Int
-  endMinute         Int
-  coachId           String?
+  id              String    @id @default(cuid())
+  locationId      String
+  disciplineId    String
+  gender          Gender
+  categoryId      String
+  sessionsPerWeek Int
+  daysOfWeek      WeekDay[]
+  startMinute     Int
+  endMinute       Int
+  coachId         String?
 
   location   Location   @relation(fields: [locationId], references: [id], onDelete: Restrict)
   discipline Discipline @relation(fields: [disciplineId], references: [id], onDelete: Restrict)
@@ -278,12 +279,12 @@ model Group {
 }
 
 model Enrolment {
-  id            String            @id @default(cuid())
-  studentId     String
-  groupId       String
-  status        EnrollmentStatus  @default(ACTIVE)
-  startDate     DateTime
-  cancelledAt  DateTime?
+  id          String           @id @default(cuid())
+  studentId   String
+  groupId     String
+  status      EnrollmentStatus @default(ACTIVE)
+  startDate   DateTime
+  cancelledAt DateTime?
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   group   Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -299,11 +300,11 @@ model Enrolment {
 //
 
 model ClassSession {
-  id        String   @id @default(cuid())
-  groupId   String
-  date      DateTime
+  id      String   @id @default(cuid())
+  groupId String
+  date    DateTime
 
-  group      Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group      Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
   attendance Attendance[]
 
   createdAt DateTime @default(now())
@@ -313,21 +314,20 @@ model ClassSession {
 }
 
 model Attendance {
-  id               String           @id @default(cuid())
-  sessionId        String
-  studentId        String
-  status           AttendanceStatus
-  markedAt         DateTime         @default(now())
-  markedByUserId   String?
-  editedAt         DateTime?
-  editedByUserId   String?
+  id             String           @id @default(cuid())
+  sessionId      String
+  studentId      String
+  status         AttendanceStatus
+  markedAt       DateTime         @default(now())
+  markedByUserId String?
+  editedAt       DateTime?
+  editedByUserId String?
 
   session ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   student Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-    markedByUser User? @relation("AttendanceMarkedBy", fields: [markedByUserId], references: [id], onDelete: SetNull)
-	editedByUser User? @relation("AttendanceEditedBy", fields: [editedByUserId], references: [id], onDelete: SetNull)
-
+  markedByUser User? @relation("AttendanceMarkedBy", fields: [markedByUserId], references: [id], onDelete: SetNull)
+  editedByUser User? @relation("AttendanceEditedBy", fields: [editedByUserId], references: [id], onDelete: SetNull)
 
   @@unique([sessionId, studentId])
 }
@@ -337,15 +337,15 @@ model Attendance {
 //
 
 model StudentLinkOtp {
-  id              String   @id @default(cuid())
-  studentId       String
-  codeHash        String
-  expiresAt       DateTime
-  attempts        Int      @default(0)
+  id                String   @id @default(cuid())
+  studentId         String
+  codeHash          String
+  expiresAt         DateTime
+  attempts          Int      @default(0)
   requestedByUserId String?
 
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  requestedByUser User? @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  student         Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  requestedByUser User?   @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 }
