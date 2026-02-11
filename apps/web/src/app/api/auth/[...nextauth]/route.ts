@@ -1,9 +1,9 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthOptions } from "next-auth";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/server/db";
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     Google({
@@ -12,6 +12,34 @@ const handler = NextAuth({
     }),
   ],
   session: { strategy: "jwt" },
-});
 
+  callbacks: {
+    async jwt({ token, user }) {
+      // Primera vez que se crea el JWT (sign in)
+      if (user) {
+        token.role = (user as any).role; // Prisma/adapter lo trae si existe en User
+      }
+
+      // Si por alguna razón no vino, lo leemos de DB (safe)
+      if (!token.role && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+          select: { role: true },
+        });
+        token.role = dbUser?.role ?? "STAFF";
+      }
+
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).role = token.role ?? "STAFF";
+      }
+      return session;
+    },
+  },
+};
+
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
