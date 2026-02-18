@@ -1,30 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { StudentsTable } from "@/features/students/components/students-table";
-import type { StudentRow } from "@/features/students/types";
-
-const MOCK: StudentRow[] = [
-  {
-    id: "stu_1",
-    fullName: "Juan Perez",
-    dni: "12345678",
-    category: "U15",
-    status: "ACTIVE",
-    phone: "+51 999 888 777",
-    email: "juan.perez@example.com",
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "stu_2",
-    fullName: "Maria Lopez",
-    dni: "87654321",
-    category: "U13",
-    status: "INACTIVE",
-    phone: null,
-    email: "maria.lopez@example.com",
-    updatedAt: new Date().toISOString(),
-  },
-];
+import { StudentsPageClient } from "@/features/students/components/students-page-client";
 
 export default function StudentsPage() {
   return (
@@ -42,7 +18,7 @@ export default function StudentsPage() {
         </Button>
       </div>
 
-      <StudentsTable data={MOCK} />
+      <StudentsPageClient />
     </div>
   );
 }

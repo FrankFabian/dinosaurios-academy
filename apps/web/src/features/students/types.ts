@@ -8,5 +8,6 @@ export type StudentRow = {
   status: StudentStatus;
   phone?: string | null;
   email?: string | null;
+  createdAt: string;
   updatedAt: string; // ISO string for now
 };
