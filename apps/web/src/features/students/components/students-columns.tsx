@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { ColumnDef, FilterFn } from "@tanstack/react-table";
 
@@ -14,6 +15,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import type { StudentRow, StudentStatus } from "../types";
+import { StudentQrDialog } from "./students-qr-dialog";
+import { QrCode } from "lucide-react";
+import React from "react";
 
 function StatusBadge({ status }: { status: StudentStatus }) {
   return (
@@ -37,6 +41,34 @@ const statusFilterFn: FilterFn<StudentRow> = (row, _id, value) => {
 };
 
 export const studentColumns: ColumnDef<StudentRow>[] = [
+  {
+    id: "photo",
+    header: "",
+    cell: ({ row }) => {
+      const url = row.original.photoUrl;
+
+      return (
+        <div className="h-10 w-10 overflow-hidden rounded-full border border-white/10 bg-white/5">
+          {url ? (
+            <Image
+              src={url}
+              alt="Student photo"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-cover"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center text-xs text-white/50">
+              —
+            </div>
+          )}
+        </div>
+      );
+    },
+    enableSorting: false,
+    enableHiding: true,
+    size: 56,
+  },
   {
     accessorKey: "fullName",
     header: "Student",
@@ -81,6 +113,8 @@ export const studentColumns: ColumnDef<StudentRow>[] = [
     id: "actions",
     header: "",
     cell: ({ row }) => {
+      const [dropdownOpen, setDropdownOpen] = React.useState(false);
+      const [qrOpen, setQrOpen] = React.useState(false);
       const id = row.original.id;
       return (
         <div className="flex justify-end">
@@ -100,6 +134,23 @@ export const studentColumns: ColumnDef<StudentRow>[] = [
               <DropdownMenuItem asChild className="cursor-pointer">
                 <Link href={`/dashboard/students/${id}/edit`}>Edit</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onSelect={(e) => {
+                  // IMPORTANTE: evita que el dropdown cierre y mate el focus
+                  e.preventDefault();
+                  setQrOpen(true);
+                }}
+              >
+                <QrCode className="h-4 w-4 text-emerald-400" />
+                QR
+              </DropdownMenuItem>
+
+              <StudentQrDialog
+                student={row.original}
+                open={qrOpen}
+                onOpenChange={setQrOpen}
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
