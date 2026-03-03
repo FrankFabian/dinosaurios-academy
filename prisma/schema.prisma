@@ -64,6 +64,16 @@ enum WeekDay {
   SUN
 }
 
+enum StudentCategory {
+  PRE_MINI
+  MINI
+  U13
+  U15
+  U17
+  U19
+  OPEN
+}
+
 //
 // AUTH / USERS (Google)
 //
@@ -250,17 +260,24 @@ model StaffLocation {
 //
 
 model Student {
-  id         String           @id @default(cuid())
-  userId     String?          @unique
-  documentId String           @unique
+  id         String   @id @default(cuid())
+  userId     String?  @unique
+
+  documentId String   @unique
   firstName  String
   lastName   String
+
   phone      String?
-  email      String
+  email      String   @db.VarChar(320) // ✅ obligatorio (según tu requerimiento)
   birthDate  DateTime
-  photoUrl   String?
-  qrCode     String           @unique
-  qrIssuedAt DateTime         @default(now())
+
+  category   StudentCategory @default(OPEN) // ✅ NUEVO
+
+  photoUrl      String?
+  photoPublicId String?                // ✅ NUEVO (Cloudinary)
+
+  qrCode     String   @unique
+  qrIssuedAt DateTime @default(now())
   linkOtps   StudentLinkOtp[]
 
   status RecordStatus @default(ACTIVE)
@@ -283,6 +300,7 @@ model Guardian {
   firstName  String
   lastName   String
   phone      String?
+  email      String? @db.VarChar(320) // ✅ NUEVO
 
   students Student[]
 

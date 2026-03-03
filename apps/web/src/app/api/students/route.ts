@@ -1,71 +1,45 @@
-import { StudentCreateValues, StudentRow } from "@/features/students/types";
+import { mapStudentToRow } from "@/features/students/mappers";
+import { createStudentDb, listStudentsDb } from "@/features/students/repository";
+import { createStudentSchema, zodErrorToResponse } from "@/features/students/schemas";
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-// ✅ Por ahora mockeamos acá (luego lo conectas a Prisma)
-const now = new Date().toISOString();
-
-export let MOCK: StudentRow[] = [
-  {
-    id: "stu_1",
-    fullName: "Ana Torres",
-    dni: "76543210",
-    email: "ana@example.com",
-    phone: "+51 999 111 222",
-    birthDate: "2012-05-10",
-    category: "U13",
-    status: "ACTIVE",
-    createdAt: now,
-    updatedAt: now,
-    qrCodeValue: crypto.randomUUID(),
-  },
-  {
-    id: "stu_2",
-    fullName: "Luis Rojas",
-    dni: "12345678",
-    email: "luis@example.com",
-    phone: "+51 999 333 444",
-    birthDate: "2008-11-22",
-    category: "U17",
-    status: "INACTIVE",
-    createdAt: now,
-    updatedAt: now,
-    qrCodeValue: crypto.randomUUID(),
-  },
-];
-
 export async function GET() {
-  return NextResponse.json({ data: MOCK });
+  const students = await listStudentsDb();
+  return NextResponse.json({ data: students.map(mapStudentToRow) });
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as StudentCreateValues & {
-  photoUrl?: string | null;
-  photoPublicId?: string | null;
-};
+  const payload = await req.json();
+  const parsed = createStudentSchema.safeParse(payload);
+  if (!parsed.success) {
+    return NextResponse.json(zodErrorToResponse(parsed.error), { status: 400 });
+  }
 
-  const now = new Date().toISOString();
+  const body = parsed.data;
+  const birthDate = new Date(`${body.birthDate}T00:00:00.000Z`);
 
-  const newStudent: StudentRow = {
-    id: crypto.randomUUID(),
-    fullName: `${body.firstName} ${body.lastName}`.trim(),
-    dni: body.dni,
-    phone: body.phone ?? null,
-    email: body.email ? body.email : null,
+  try {
+    const created = await createStudentDb({
+      firstName: body.firstName.trim(),
+      lastName: body.lastName.trim(),
+      documentId: body.dni.trim(),
+      phone: body.phone?.trim() || null,
+      email: body.email.trim(),
+      birthDate,
+      category: body.category ?? "OPEN",
+      photoUrl: body.photoUrl ?? null,
+      photoPublicId: body.photoPublicId ?? null,
+      qrCode: crypto.randomUUID(),
+      status: "ACTIVE",
+    });
 
-    birthDate: body.birthDate,
-    category: body.category ?? "OPEN",
-    status: "ACTIVE", // ✅ literal: StudentStatus
-    
-    photoUrl: body.photoUrl ?? null,
-    photoPublicId: body.photoPublicId ?? null,
-    
-    qrCodeValue: crypto.randomUUID(),
+    return NextResponse.json({ data: mapStudentToRow(created) }, { status: 201 });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json({ error: "Student already exists" }, { status: 409 });
+    }
 
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  MOCK = [newStudent, ...MOCK];
-
-  return NextResponse.json({ data: newStudent }, { status: 201 });
+    throw error;
+  }
 }

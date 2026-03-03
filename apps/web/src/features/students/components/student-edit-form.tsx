@@ -1,48 +1,38 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useCreateStudent } from "../hooks/use-create-student";
-import { STUDENT_CATEGORY, STUDENT_STATUS } from "../types";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
+
+import type { StudentRow } from "../types";
+import { STUDENT_CATEGORY, STUDENT_STATUS } from "../types";
+import { useUpdateStudent } from "../hooks/use-update-student";
+import { StudentQrDialog } from "./students-qr-dialog";
 import { StudentPhotoPicker } from "./student-photo-picker";
 
-const studentCreateSchema = z.object({
-  firstName: z.string().min(1, "Required"),
-  lastName: z.string().min(1, "Required"),
-  dni: z.string().min(8, "Min 8 chars").max(12, "Max 12 chars"),
-  phone: z.string().optional(),
+const schema = z.object({
+  firstName: z.string().min(1, "Required").optional(),
+  lastName: z.string().min(1, "Required").optional(),
+  dni: z.string().min(8, "Min 8 chars").max(12, "Max 12 chars").optional(),
+  birthDate: z.string().optional(),
+  category: z.enum(STUDENT_CATEGORY).optional(),
+  status: z.enum(STUDENT_STATUS).optional(),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
-  birthDate: z.string().min(1, "Required"), // yyyy-mm-dd from <input type="date" />
-  category: z.enum(STUDENT_CATEGORY),
-  status: z.enum(STUDENT_STATUS),
+  phone: z.string().optional(),
 });
 
-type StudentCreateValues = z.infer<typeof studentCreateSchema>;
+type FormValues = z.infer<typeof schema>;
+type Role = "ADMIN" | "STAFF" | "COACH" | "STUDENT";
 
 const CATEGORY_LABEL: Record<(typeof STUDENT_CATEGORY)[number], string> = {
   PRE_MINI: "Pre-mini",
@@ -59,73 +49,104 @@ const STATUS_LABEL: Record<(typeof STUDENT_STATUS)[number], string> = {
   INACTIVE: "Inactive",
 };
 
-export function StudentCreateForm() {
-  const router = useRouter();
-  const createStudentMutation = useCreateStudent();
+export function StudentEditForm({ student }: { student: StudentRow }) {
+  // TODO: saca esto del session/role real
+  const role: Role = "ADMIN";
+
+  const canEditAll = role === "ADMIN" || role === "STAFF";
+  const mutation = useUpdateStudent(student.id);
+  const [qrOpen, setQrOpen] = React.useState(false);
 
   const [photoFile, setPhotoFile] = React.useState<File | null>(null);
-  const [photoPreviewUrl, setPhotoPreviewUrl] = React.useState<string | null>(
-    null
-  );
-  const form = useForm<StudentCreateValues>({
-    resolver: zodResolver(studentCreateSchema),
+  const [photoPreviewUrl, setPhotoPreviewUrl] = React.useState<string | null>(student.photoUrl ?? null);
+  const [removeCurrentPhoto, setRemoveCurrentPhoto] = React.useState(false);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      dni: "",
-      phone: "",
-      email: "",
-      birthDate: "",
-      category: "OPEN",
-      status: "ACTIVE",
+      firstName: student.firstName,
+      lastName: student.lastName,
+      dni: student.dni,
+      birthDate: student.birthDate,
+      category: student.category,
+      status: student.status,
+      email: student.email ?? "",
+      phone: student.phone ?? "",
     },
   });
 
-  const isSubmitting = createStudentMutation.isPending;
+  const isSubmitting = mutation.isPending;
+
+  React.useEffect(() => {
+    return () => {
+      if (photoPreviewUrl && photoPreviewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(photoPreviewUrl);
+      }
+    };
+  }, [photoPreviewUrl]);
 
   function onPickPhoto(file: File | null) {
     if (!file) {
       setPhotoFile(null);
+      setRemoveCurrentPhoto(true);
       setPhotoPreviewUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
+        if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
         return null;
       });
       return;
     }
 
+    setRemoveCurrentPhoto(false);
     setPhotoFile(file);
-
     setPhotoPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
+      if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
   }
 
-  async function onSubmit(values: StudentCreateValues) {
+  async function onSubmit(values: FormValues) {
     form.clearErrors("root");
 
     try {
-      let photoUrl: string | null = null;
-      let photoPublicId: string | null = null;
+      let photoUrl: string | null | undefined = undefined;
+      let photoPublicId: string | null | undefined = undefined;
 
-      // ✅ si el usuario eligió foto, subimos primero a Cloudinary
-      if (photoFile) {
-        const uploaded = await uploadImageToCloudinary(photoFile);
-        photoUrl = uploaded.photoUrl;
-        photoPublicId = uploaded.photoPublicId;
+      if (canEditAll) {
+        if (photoFile) {
+          const uploaded = await uploadImageToCloudinary(photoFile);
+          photoUrl = uploaded.photoUrl;
+          photoPublicId = uploaded.photoPublicId;
+        } else if (removeCurrentPhoto) {
+          photoUrl = null;
+          photoPublicId = null;
+        }
       }
 
-      createStudentMutation.mutate(
-        { ...values, photoUrl, photoPublicId },
-        {
-          onSuccess: () => router.push("/dashboard/students"),
-          onError: (error) => {
-            form.setError("root", {
-              message: error instanceof Error ? error.message : "Failed to create student",
-            });
-          },
-        }
-      );
+      const payload = canEditAll
+        ? {
+            firstName: values.firstName,
+            lastName: values.lastName,
+            dni: values.dni,
+            birthDate: values.birthDate,
+            category: values.category,
+            status: values.status,
+            email: values.email ? values.email : null,
+            phone: values.phone ? values.phone : null,
+            ...(photoUrl !== undefined ? { photoUrl } : {}),
+            ...(photoPublicId !== undefined ? { photoPublicId } : {}),
+          }
+        : {
+            email: values.email ? values.email : null,
+            phone: values.phone ? values.phone : null,
+          };
+
+      mutation.mutate(payload, {
+        onError: (e) => {
+          form.setError("root", {
+            message: e instanceof Error ? e.message : "Failed to update",
+          });
+        },
+      });
     } catch (e) {
       form.setError("root", {
         message: e instanceof Error ? e.message : "Upload failed",
@@ -133,29 +154,50 @@ export function StudentCreateForm() {
     }
   }
 
-  const firstName = form.watch("firstName");
-  const lastName = form.watch("lastName");
+  const firstName = form.watch("firstName") ?? "";
+  const lastName = form.watch("lastName") ?? "";
 
   return (
     <Card className="relative border-white/10 bg-black/40 p-4 backdrop-blur-md">
-      <div className="flex flex-col gap-4">
+      <div className="space-y-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-xl font-semibold text-white">Edit student</div>
+            <div className="text-sm text-white/60">Update profile info and view QR.</div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="border-white/15 bg-transparent text-white hover:bg-white/10"
+            onClick={() => setQrOpen(true)}
+          >
+            View QR
+          </Button>
+        </div>
+
+        <StudentQrDialog
+          student={{ fullName: student.fullName, qrCodeValue: student.qrCodeValue }}
+          open={qrOpen}
+          onOpenChange={setQrOpen}
+        />
+
         <StudentPhotoPicker
-          inputId="student-photo"
+          inputId="student-photo-edit"
           firstName={firstName}
           lastName={lastName}
           photoPreviewUrl={photoPreviewUrl}
           onPickPhoto={onPickPhoto}
           onError={(message) => form.setError("root", { message })}
-          disabled={isSubmitting}
+          disabled={!canEditAll || isSubmitting}
         />
 
-        {/* ✅ Separator between photo section and the form */}
         <Separator className="bg-white/10" />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             {form.formState.errors.root?.message ? (
-              <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+              <div className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
                 {form.formState.errors.root.message}
               </div>
             ) : null}
@@ -170,11 +212,8 @@ export function StudentCreateForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        className={cn(
-                          "border-white/10 bg-black/30 text-zinc-100",
-                          "placeholder:text-zinc-600"
-                        )}
-                        placeholder="e.g. Frank"
+                        disabled={!canEditAll}
+                        className={cn("border-white/10 bg-black/30 text-zinc-100", "placeholder:text-zinc-600", !canEditAll && "opacity-70")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -191,11 +230,8 @@ export function StudentCreateForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        className={cn(
-                          "border-white/10 bg-black/30 text-zinc-100",
-                          "placeholder:text-zinc-600"
-                        )}
-                        placeholder="e.g. Fabian"
+                        disabled={!canEditAll}
+                        className={cn("border-white/10 bg-black/30 text-zinc-100", "placeholder:text-zinc-600", !canEditAll && "opacity-70")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -212,12 +248,8 @@ export function StudentCreateForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        className={cn(
-                          "border-white/10 bg-black/30 text-zinc-100",
-                          "placeholder:text-zinc-600"
-                        )}
-                        placeholder="8-12 digits"
-                        inputMode="numeric"
+                        disabled={!canEditAll}
+                        className={cn("border-white/10 bg-black/30 text-zinc-100", "placeholder:text-zinc-600", !canEditAll && "opacity-70")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -235,7 +267,8 @@ export function StudentCreateForm() {
                       <Input
                         {...field}
                         type="date"
-                        className="border-white/10 bg-black/30 text-zinc-100"
+                        disabled={!canEditAll}
+                        className={cn("border-white/10 bg-black/30 text-zinc-100", !canEditAll && "opacity-70")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -252,11 +285,7 @@ export function StudentCreateForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        className={cn(
-                          "border-white/10 bg-black/30 text-zinc-100",
-                          "placeholder:text-zinc-600"
-                        )}
-                        placeholder="+51 999 111 222"
+                        className={cn("border-white/10 bg-black/30 text-zinc-100", "placeholder:text-zinc-600")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -273,11 +302,7 @@ export function StudentCreateForm() {
                     <FormControl>
                       <Input
                         {...field}
-                        className={cn(
-                          "border-white/10 bg-black/30 text-zinc-100",
-                          "placeholder:text-zinc-600"
-                        )}
-                        placeholder="student@email.com"
+                        className={cn("border-white/10 bg-black/30 text-zinc-100", "placeholder:text-zinc-600")}
                       />
                     </FormControl>
                     <FormMessage />
@@ -291,14 +316,12 @@ export function StudentCreateForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-zinc-200">Category</FormLabel>
-
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value} onValueChange={field.onChange} disabled={!canEditAll}>
                       <FormControl>
-                        <SelectTrigger className="w-full border-white/10 bg-black/30 text-zinc-100 focus:ring-0 focus:ring-offset-0">
+                        <SelectTrigger className={cn("w-full border-white/10 bg-black/30 text-zinc-100 focus:ring-0 focus:ring-offset-0", !canEditAll && "opacity-70")}>
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                       </FormControl>
-
                       <SelectContent className="border-white/10 bg-zinc-950">
                         {STUDENT_CATEGORY.map((cat) => (
                           <SelectItem
@@ -311,7 +334,6 @@ export function StudentCreateForm() {
                         ))}
                       </SelectContent>
                     </Select>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -323,14 +345,12 @@ export function StudentCreateForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-zinc-200">Status</FormLabel>
-
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value} onValueChange={field.onChange} disabled={!canEditAll}>
                       <FormControl>
-                        <SelectTrigger className="w-full border-white/10 bg-black/30 text-zinc-100 focus:ring-0 focus:ring-offset-0">
+                        <SelectTrigger className={cn("w-full border-white/10 bg-black/30 text-zinc-100 focus:ring-0 focus:ring-offset-0", !canEditAll && "opacity-70")}>
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-
                       <SelectContent className="border-white/10 bg-zinc-950">
                         {STUDENT_STATUS.map((st) => (
                           <SelectItem
@@ -343,30 +363,15 @@ export function StudentCreateForm() {
                         ))}
                       </SelectContent>
                     </Select>
-
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
 
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-zinc-300 hover:bg-white/5"
-                onClick={() => router.push("/dashboard/students")}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                type="submit"
-                className="bg-emerald-500/90 text-black hover:bg-emerald-400"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Creating..." : "Create student"}
+            <div className="flex items-center justify-end gap-2">
+              <Button type="submit" disabled={isSubmitting} className="bg-emerald-500 text-black hover:bg-emerald-400">
+                {isSubmitting ? "Saving..." : "Save changes"}
               </Button>
             </div>
           </form>

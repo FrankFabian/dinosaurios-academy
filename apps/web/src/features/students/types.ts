@@ -15,6 +15,8 @@ export type StudentCategory = (typeof STUDENT_CATEGORY)[number];
 export type StudentRow = {
   id: string;
   fullName: string;
+  firstName: string;
+  lastName: string;
   dni: string;
   email?: string | null;
   phone?: string | null;
@@ -42,4 +44,21 @@ export type StudentCreateValues = {
 
   birthDate: string; // YYYY-MM-DD desde input type="date"
   category: StudentCategory;
+};
+
+export type StudentUpdateValues = {
+  email?: string | null;
+  phone?: string | null;
+
+  // admin/staff
+  firstName?: string;
+  lastName?: string;
+  dni?: string;
+  birthDate?: string;
+  category?: StudentRow["category"];
+  status?: StudentRow["status"];
+
+  // opcional si editas foto
+  photoUrl?: string | null;
+  photoPublicId?: string | null;
 };
