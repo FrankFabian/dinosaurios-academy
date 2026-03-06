@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-const KEY = "da_sidebar"; // da = dinosaurios academy
+const KEY = "da_sidebar"; 
 
 export async function getSidebarCollapsed(): Promise<boolean> {
   const value = (await cookies()).get(KEY)?.value;

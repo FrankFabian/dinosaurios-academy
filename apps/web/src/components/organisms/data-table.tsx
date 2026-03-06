@@ -32,9 +32,9 @@ import {
 type StatusOption = { label: string; value: string };
 
 export type DataTableStatusFilter = {
-  columnId: string; // e.g. "status"
-  label?: string;   // e.g. "Status"
-  options: StatusOption[]; // include ALL yourself
+  columnId: string; 
+  label?: string;   
+  options: StatusOption[]; 
   value: string;
   onChange: (value: string) => void;
 };
@@ -43,22 +43,22 @@ export type DataTableProps<TData> = {
   data: TData[];
   columns: ColumnDef<TData, any>[];
 
-  /** Global search */
+  
   search?: {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
-    /** If you want custom global filtering, pass a function */
+    
     globalFilterFn?: (row: any, columnId: string, filterValue: unknown) => boolean;
   };
 
-  /** Simple select filter (common for Status) */
+  
   statusFilter?: DataTableStatusFilter;
 
-  /** Pagination */
+  
   pageSize?: number;
 
-  /** UI */
+  
   emptyText?: string;
 };
 
@@ -72,7 +72,7 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   const [globalFilter, setGlobalFilter] = React.useState(search?.value ?? "");
 
-  // keep internal in sync with controlled search
+  
   React.useEffect(() => {
     if (typeof search?.value === "string") setGlobalFilter(search.value);
   }, [search?.value]);
@@ -93,20 +93,20 @@ export function DataTable<TData>({
     initialState: { pagination: { pageSize } },
   });
 
-  // Apply status filter (if provided)
+  
   React.useEffect(() => {
     if (!statusFilter) return;
     const col = table.getColumn(statusFilter.columnId);
     if (!col) return;
 
-    // convention: "ALL" means remove filter
+    
     if (statusFilter.value === "ALL") col.setFilterValue(undefined);
     else col.setFilterValue(statusFilter.value);
   }, [statusFilter, table]);
 
   return (
     <div className="space-y-4">
-      {/* Controls */}
+      {}
       {(search || statusFilter) && (
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -172,7 +172,7 @@ export function DataTable<TData>({
         </div>
       )}
 
-      {/* Table */}
+      {}
       <div className="rounded-xl border border-white/10 bg-zinc-950">
         <Table>
           <TableHeader>

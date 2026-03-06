@@ -9,7 +9,7 @@ export function useUpdateStudent(id: string) {
     mutationFn: (input: StudentUpdateValues) => updateStudent(id, input),
     onSuccess: (updated) => {
       qc.setQueryData(["students", id], updated);
-      qc.invalidateQueries({ queryKey: ["students"] }); // refresca listado
+      qc.invalidateQueries({ queryKey: ["students"] }); 
       qc.invalidateQueries({ queryKey: ["students", id] });
     },
   });

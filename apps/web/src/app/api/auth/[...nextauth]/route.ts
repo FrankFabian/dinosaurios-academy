@@ -15,12 +15,12 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // Primera vez que se crea el JWT (sign in)
+      
       if (user) {
-        token.role = (user as any).role; // Prisma/adapter lo trae si existe en User
+        token.role = (user as any).role; 
       }
 
-      // Si por alguna razón no vino, lo leemos de DB (safe)
+      
       if (!token.role && token.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email },

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function StudentsEditSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <Skeleton className="h-7 w-44 bg-white/10" />
@@ -16,10 +16,10 @@ export function StudentsEditSkeleton() {
         </div>
       </div>
 
-      {/* Form card */}
+      {}
       <div className="rounded-xl border border-white/10 bg-zinc-950 p-5">
         <div className="grid gap-5 md:grid-cols-[1fr_260px]">
-          {/* Left side (inputs) */}
+          {}
           <div className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
@@ -66,7 +66,7 @@ export function StudentsEditSkeleton() {
             </div>
           </div>
 
-          {/* Right side (photo/preview placeholder) */}
+          {}
           <div className="space-y-3">
             <Skeleton className="h-4 w-16 bg-white/10" />
             <div className="rounded-xl border border-white/10 bg-black p-4">
@@ -86,7 +86,7 @@ export function StudentsEditSkeleton() {
           </div>
         </div>
 
-        {/* Footer buttons */}
+        {}
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
           <Skeleton className="h-9 w-full sm:w-28 bg-white/10" />
           <Skeleton className="h-9 w-full sm:w-36 bg-white/10" />

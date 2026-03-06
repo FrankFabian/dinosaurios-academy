@@ -12,6 +12,8 @@ export function StudentsTable({ data }: { data: StudentRow[] }) {
   const [q, setQ] = React.useState("");
   const [status, setStatus] = React.useState<"ALL" | StudentStatus>("ALL");
 
+  console.log(data)
+
   if (!data || data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">

@@ -83,13 +83,13 @@
 }
 
 .dark {
-  --background: 240 10% 3.5%;          /* casi negro */
+  --background: 240 10% 3.5%;
   --foreground: 210 40% 98%;
-  --card: 240 10% 6%;                  /* un poquito más claro */
+  --card: 240 10% 6%;
   --card-foreground: 210 40% 98%;
   --popover: oklch(0.208 0.042 265.755);
   --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: 142.1 76.2% 36.3%;        /* verde */
+  --primary: 142.1 76.2% 36.3%;
   --primary-foreground: 0 0% 100%;
   --secondary: oklch(0.279 0.041 260.031);
   --secondary-foreground: oklch(0.984 0.003 247.858);

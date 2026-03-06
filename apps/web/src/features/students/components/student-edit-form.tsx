@@ -50,7 +50,7 @@ const STATUS_LABEL: Record<(typeof STUDENT_STATUS)[number], string> = {
 };
 
 export function StudentEditForm({ student }: { student: StudentRow }) {
-  // TODO: saca esto del session/role real
+  
   const role: Role = "ADMIN";
 
   const canEditAll = role === "ADMIN" || role === "STAFF";

@@ -37,12 +37,12 @@ export function DashboardTopbar({ role }: { role: Role }) {
   const [open, setOpen] = React.useState(false);
   React.useEffect(() => {
     const onResize = () => {
-      // md = 768px en Tailwind por defecto
+      
       if (window.innerWidth >= 768) setOpen(false);
     };
 
     window.addEventListener("resize", onResize);
-    onResize(); // corre una vez al montar
+    onResize(); 
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
@@ -56,7 +56,7 @@ export function DashboardTopbar({ role }: { role: Role }) {
       )}
     >
       <div className={cn("flex h-17 w-full items-center", "px-4 md:px-6")}>
-        {/* LEFT (mobile only): hamburger + brand */}
+        {}
         <div className={cn("flex items-center gap-3 md:hidden")}>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -111,7 +111,7 @@ export function DashboardTopbar({ role }: { role: Role }) {
           </div>
         </div>
 
-        {/* LEFT (desktop only): status */}
+        {}
         <div className={cn("hidden md:flex items-center gap-3 text-sm")}>
           <span
             className={cn(
@@ -132,10 +132,10 @@ export function DashboardTopbar({ role }: { role: Role }) {
           </span>
         </div>
 
-        {/* SPACER: pushes avatar to the far right */}
+        {}
         <div className="flex-1" />
 
-        {/* RIGHT: avatar dropdown */}
+        {}
         <div className="flex items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

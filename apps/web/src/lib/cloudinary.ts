@@ -38,7 +38,7 @@ export async function uploadImageToCloudinary(file: File) {
   formData.append("file", file);
   formData.append("upload_preset", uploadPreset);
 
-  // opcional: organizar en folder
+  
   formData.append("folder", "dinosaurios/students");
 
   const res = await fetch(

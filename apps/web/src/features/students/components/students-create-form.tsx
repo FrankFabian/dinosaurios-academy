@@ -37,7 +37,7 @@ const studentCreateSchema = z.object({
   dni: z.string().min(8, "Min 8 chars").max(12, "Max 12 chars"),
   phone: z.string().optional(),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
-  birthDate: z.string().min(1, "Required"), // yyyy-mm-dd from <input type="date" />
+  birthDate: z.string().min(1, "Required"), 
   category: z.enum(STUDENT_CATEGORY),
   status: z.enum(STUDENT_STATUS),
 });
@@ -108,7 +108,7 @@ export function StudentCreateForm() {
       let photoUrl: string | null = null;
       let photoPublicId: string | null = null;
 
-      // ✅ si el usuario eligió foto, subimos primero a Cloudinary
+      
       if (photoFile) {
         const uploaded = await uploadImageToCloudinary(photoFile);
         photoUrl = uploaded.photoUrl;
@@ -149,7 +149,7 @@ export function StudentCreateForm() {
           disabled={isSubmitting}
         />
 
-        {/* ✅ Separator between photo section and the form */}
+        {}
         <Separator className="bg-white/10" />
 
         <Form {...form}>

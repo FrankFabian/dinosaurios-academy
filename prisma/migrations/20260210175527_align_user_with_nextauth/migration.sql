@@ -1,9 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `imageUrl` on the `User` table. All the data in the column will be lost.
-
-*/
 -- AlterTable
 ALTER TABLE "User" DROP COLUMN "imageUrl",
 ADD COLUMN     "image" TEXT;
@@ -66,3 +60,4 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

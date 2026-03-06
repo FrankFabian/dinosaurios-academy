@@ -21,7 +21,7 @@ export type StudentRow = {
   email?: string | null;
   phone?: string | null;
 
-  birthDate: string; // ISO (o YYYY-MM-DD si por ahora lo guardas así)
+  birthDate: string; 
   category: StudentCategory;
   status: StudentStatus;
   
@@ -30,8 +30,8 @@ export type StudentRow = {
 
   qrCodeValue: string;
   
-  createdAt: string; // ISO
-  updatedAt: string; // ISO
+  createdAt: string; 
+  updatedAt: string; 
 };
 
 export type StudentCreateValues = {
@@ -42,7 +42,7 @@ export type StudentCreateValues = {
   phone?: string;
   email?: string;
 
-  birthDate: string; // YYYY-MM-DD desde input type="date"
+  birthDate: string; 
   category: StudentCategory;
 };
 
@@ -50,7 +50,7 @@ export type StudentUpdateValues = {
   email?: string | null;
   phone?: string | null;
 
-  // admin/staff
+  
   firstName?: string;
   lastName?: string;
   dni?: string;
@@ -58,7 +58,7 @@ export type StudentUpdateValues = {
   category?: StudentRow["category"];
   status?: StudentRow["status"];
 
-  // opcional si editas foto
+  
   photoUrl?: string | null;
   photoPublicId?: string | null;
 };

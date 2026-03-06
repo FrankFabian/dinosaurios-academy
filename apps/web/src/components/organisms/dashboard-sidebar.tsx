@@ -26,7 +26,7 @@ const NAV_ITEMS: NavItem[] = [
 
 
 function setCookie(name: string, value: string) {
-    document.cookie = `${name}=${value}; path=/; max-age=${60 * 60 * 24 * 180}`; // 180 days
+    document.cookie = `${name}=${value}; path=/; max-age=${60 * 60 * 24 * 180}`;
 }
 
 export function DashboardSidebar({

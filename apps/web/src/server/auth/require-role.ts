@@ -10,5 +10,5 @@ export async function requireRole(allowed: AppRole[]) {
   if (!session?.user) redirect("/api/auth/signin");
 
   const role = session.user.role;
-  if (!allowed.includes(role)) redirect("/dashboard"); // o "/403" luego
+  if (!allowed.includes(role)) redirect("/dashboard"); 
 }

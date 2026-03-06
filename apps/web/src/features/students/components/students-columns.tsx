@@ -137,7 +137,6 @@ export const studentColumns: ColumnDef<StudentRow>[] = [
               <DropdownMenuItem
                 className="cursor-pointer"
                 onSelect={(e) => {
-                  // IMPORTANTE: evita que el dropdown cierre y mate el focus
                   e.preventDefault();
                   setQrOpen(true);
                 }}
