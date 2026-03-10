@@ -141,6 +141,8 @@ model Location {
   name     String
   address  String
   photoUrl String?
+  mapsUrl  String?
+  embedUrl String?
   status   LocationStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
