@@ -6,7 +6,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ClipboardCheck, Layers3, LucideIcon, MapPin, Shield, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, ClipboardCheck, Dumbbell, Layers3, LucideIcon, MapPin, Shield, Users } from "lucide-react";
 
 type Role = "ADMIN" | "STAFF" | "COACH";
 
@@ -21,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
     { label: "Attendance", href: "/dashboard/attendance", roles: ["ADMIN", "STAFF", "COACH"], icon: ClipboardCheck },
     { label: "Students", href: "/dashboard/students", roles: ["ADMIN", "STAFF"], icon: Users },
     { label: "Locations", href: "/dashboard/locations", roles: ["ADMIN", "STAFF"], icon: MapPin },
+    { label: "Disciplines", href: "/dashboard/disciplines", roles: ["ADMIN", "STAFF"], icon: Dumbbell },
     { label: "Groups", href: "/dashboard/groups", roles: ["ADMIN", "STAFF"], icon: Layers3 },
     { label: "Admin", href: "/dashboard/admin", roles: ["ADMIN"], icon: Shield },
 ];
