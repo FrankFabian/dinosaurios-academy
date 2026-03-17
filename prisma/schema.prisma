@@ -34,6 +34,11 @@ enum CategoryStatus {
   INACTIVE
 }
 
+enum GroupStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -298,6 +303,7 @@ model Group {
   id              String    @id @default(cuid())
   locationId      String
   disciplineId    String
+  status          GroupStatus @default(ACTIVE)
   gender          Gender
   categoryId      String
   sessionsPerWeek Int
@@ -317,6 +323,7 @@ model Group {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([status])
   @@unique([locationId, disciplineId, gender, categoryId, sessionsPerWeek, startMinute, endMinute])
 }
 
