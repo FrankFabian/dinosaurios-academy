@@ -1,4 +1,4 @@
-import type { StudentCreateValues, StudentRow, StudentUpdateValues } from "../types";
+import type { StudentCreateValues, StudentProfile, StudentRow, StudentUpdateValues } from "../types";
 
 export type StudentCreatePayload = StudentCreateValues & {
   photoUrl?: string | null;
@@ -61,6 +61,13 @@ export async function fetchStudent(id: string): Promise<StudentRow> {
   return json.data as StudentRow;
 }
 
+export async function fetchStudentProfile(id: string): Promise<StudentProfile> {
+  const res = await fetch(`/api/students/${id}/profile`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch student profile");
+  const json = await res.json();
+  return json.data as StudentProfile;
+}
+
 export async function updateStudent(id: string, input: StudentUpdateValues): Promise<StudentRow> {
   const res = await fetch(`/api/students/${id}`, {
     method: "PATCH",
@@ -70,4 +77,13 @@ export async function updateStudent(id: string, input: StudentUpdateValues): Pro
   if (!res.ok) throw new Error(await getApiErrorMessage(res, "Failed to update student"));
   const json = await res.json();
   return json.data as StudentRow;
+}
+
+export async function resendStudentClaimLink(id: string): Promise<{ sent: boolean; provider: string }> {
+  const res = await fetch(`/api/students/${id}/resend-claim`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error(await getApiErrorMessage(res, "Failed to resend claim link"));
+  const json = (await res.json()) as { data: { sent: boolean; provider: string } };
+  return json.data;
 }

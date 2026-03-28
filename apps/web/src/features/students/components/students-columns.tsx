@@ -18,6 +18,7 @@ import type { StudentRow, StudentStatus } from "../types";
 import { StudentQrDialog } from "./students-qr-dialog";
 import { QrCode } from "lucide-react";
 import React from "react";
+import { resendStudentClaimLink } from "../api/students.api";
 
 function StatusBadge({ status }: { status: StudentStatus }) {
   return (
@@ -115,6 +116,7 @@ export const studentColumns: ColumnDef<StudentRow>[] = [
     cell: ({ row }) => {
       const [dropdownOpen, setDropdownOpen] = React.useState(false);
       const [qrOpen, setQrOpen] = React.useState(false);
+      const [isResendingClaim, setIsResendingClaim] = React.useState(false);
       const id = row.original.id;
       return (
         <div className="flex justify-end">
@@ -143,6 +145,24 @@ export const studentColumns: ColumnDef<StudentRow>[] = [
               >
                 <QrCode className="h-4 w-4 text-emerald-400" />
                 QR
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                disabled={isResendingClaim}
+                onSelect={async (e) => {
+                  e.preventDefault();
+                  try {
+                    setIsResendingClaim(true);
+                    const result = await resendStudentClaimLink(id);
+                    window.alert(`Claim link sent via ${result.provider}.`);
+                  } catch (error) {
+                    window.alert(error instanceof Error ? error.message : "Failed to resend claim link");
+                  } finally {
+                    setIsResendingClaim(false);
+                  }
+                }}
+              >
+                {isResendingClaim ? "Resending..." : "Resend claim link"}
               </DropdownMenuItem>
 
               <StudentQrDialog

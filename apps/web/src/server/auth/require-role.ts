@@ -7,7 +7,7 @@ export type AppRole = "ADMIN" | "STAFF" | "COACH";
 export async function requireRole(allowed: AppRole[]) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user) redirect("/api/auth/signin");
+  if (!session?.user) redirect("/login");
 
   const role = session.user.role;
   if (!allowed.includes(role)) redirect("/dashboard"); 
