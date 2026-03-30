@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-dvh bg-background">
       <div className="flex min-h-dvh">
-        <aside className="hidden md:block">
+        <aside className="hidden shrink-0 bg-zinc-950 md:block">
           <DashboardSidebar role={role} initialCollapsed={collapsed} />
         </aside>
 
